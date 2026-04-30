@@ -3,8 +3,10 @@ node_modules/
 
 # Environment variables
 .env
-#text files
+#text files/temporary files
 Flow.txt
+Outline of AI report.txt
+temp.js
 
 # Debug logs
 npm-debug.log*

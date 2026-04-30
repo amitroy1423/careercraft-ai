@@ -14,9 +14,14 @@ app.use(cors({
 }))
 // require all the routes here
 const authRouter = require('./routes/auth.routes');
+const interviewRouter = require('./routes/interview.routes');
+
 
 // define routes here => http://localhost:5000/api/auth/register, http://localhost:5000/api/auth/login
 app.use('/api/auth', authRouter);
+app.use('/api/interview', interviewRouter);
+
+
 
 module.exports = app;
 
