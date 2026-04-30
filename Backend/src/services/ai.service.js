@@ -1,3 +1,150 @@
+import puppeteer from "puppeteer";
+import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
+import { GoogleGenAI } from "@google/genai";
+import dotenv from "dotenv";
+import { Client } from "@gradio/client";
+
+dotenv.config({ quiet: true });
+
+const ai = new GoogleGenAI({
+  apiKey: process.env.GOOGLE_GENAI_API_KEY,
+});
+
+// ---------------- HELPERS ----------------
+
+function convertToObjects(arr, keys) {
+  const result = [];
+
+  for (let i = 0; i < arr.length; i += keys.length * 2) {
+    const obj = {};
+    for (let j = 0; j < keys.length; j++) {
+      obj[keys[j]] = arr[i + j * 2 + 1];
+    }
+    result.push(obj);
+  }
+
+  return result;
+}
+
+// ---------------- INTERVIEW REPORT ----------------
+
+export async function generateInterviewReport({
+  resume,
+  selfDescription,
+  jobDescription,
+}) {
+  try {
+    const client = await Client.connect(process.env.INTERVIEW_REPORT_URL);
+
+    const response = await client.predict("/generate_report", {
+      resume: resume,
+      self_desc: selfDescription,
+      job_desc: jobDescription,
+    });
+
+    let data = response.data[0];
+
+    return data;
+  } catch (error) {
+    console.error("Error generating interview report:", error);
+    throw error;
+  }
+}
+
+// ---------------- PDF GENERATION ----------------
+
+async function generatePdfFromHtml(htmlContent) {
+  const browser = await puppeteer.launch({
+    headless: "new",
+  });
+
+  const page = await browser.newPage();
+
+  await page.setContent(htmlContent, {
+    waitUntil: "networkidle0",
+  });
+
+  const pdfBuffer = await page.pdf({
+    format: "A4",
+    margin: {
+      top: "20mm",
+      bottom: "20mm",
+      left: "15mm",
+      right: "15mm",
+    },
+  });
+
+  await browser.close();
+
+  return pdfBuffer;
+}
+
+// ---------------- RESUME PDF ----------------
+
+export async function generateResumePdf({
+  resume,
+  selfDescription,
+  jobDescription,
+}) {
+  try {
+    const resumePdfSchema = z.object({
+      html: z.string(),
+    });
+
+    const prompt = `
+Generate resume for a candidate:
+
+Resume: ${resume}
+Self Description: ${selfDescription}
+Job Description: ${jobDescription}
+
+Return ONLY JSON:
+{
+  "html": "<valid HTML resume>"
+}
+
+Requirements:
+- Professional, clean design
+- ATS friendly
+- 1-2 pages max
+- No AI-sounding text
+`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: zodToJsonSchema(resumePdfSchema),
+      },
+    });
+
+    const jsonContent = JSON.parse(response.text);
+
+    const pdfBuffer = await generatePdfFromHtml(jsonContent.html);
+
+    return pdfBuffer;
+  } catch (error) {
+    console.error("Error generating resume PDF:", error);
+    throw error;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //const { GoogleGenAI } = require("@google/genai")
 //const { z } = require("zod")
 //const { zodToJsonSchema } = require("zod-to-json-schema")
@@ -212,29 +359,29 @@
 //import { GoogleGenAI } from "@google/genai";
 //import dotenv from "dotenv";
 //import { Client } from "@gradio/client";
-const { Client } = require("@gradio/client")
-async function generateInterviewReport({
-  resume,
-  selfDescription,
-  jobDescription,
-}) {
-  try {
-    const client = await Client.connect(process.env.INTERVIEW_REPORT_URL);
+// const { Client } = require("@gradio/client")
+// async function generateInterviewReport({
+//   resume,
+//   selfDescription,
+//   jobDescription,
+// }) {
+//   try {
+//     const client = await Client.connect(process.env.INTERVIEW_REPORT_URL);
 
-    const response = await client.predict("/generate_report", {
-      resume: resume,
-      self_desc: selfDescription,
-      job_desc: jobDescription,
-    });
+//     const response = await client.predict("/generate_report", {
+//       resume: resume,
+//       self_desc: selfDescription,
+//       job_desc: jobDescription,
+//     });
 
-    let data = response.data[0];
-    console.log("hi")
-    console.log(data);
-    return data;
-  } catch (error) {
-    console.error("Error generating interview report:", error);
-    throw error;
-  }
-}
+//     let data = response.data[0];
+//     console.log("hi")
+//     console.log(data);
+//     return data;
+//   } catch (error) {
+//     console.error("Error generating interview report:", error);
+//     throw error;
+//   }
+// }
 
-module.exports = generateInterviewReport;
+// module.exports = generateInterviewReport;
