@@ -39,7 +39,27 @@ app.use('/api/interview', interviewRouter);
 
 // Unified deployment: Serve static files from Frontend build if it exists
 const frontendBuildPath = path.join(__dirname, '../../Frontend/dist');
-if (fs.existsSync(frontendBuildPath)) {
+
+console.log("=== FRONTEND BUILD PATH VERIFICATION ===");
+console.log("Expected Path:", frontendBuildPath);
+const exists = fs.existsSync(frontendBuildPath);
+console.log("Folder Exists:", exists);
+if (exists) {
+    try {
+        console.log("Folder contents:", fs.readdirSync(frontendBuildPath));
+        const assetsPath = path.join(frontendBuildPath, 'assets');
+        if (fs.existsSync(assetsPath)) {
+            console.log("Assets contents:", fs.readdirSync(assetsPath));
+        } else {
+            console.log("Assets directory does not exist!");
+        }
+    } catch (err) {
+        console.error("Error listing files:", err.message);
+    }
+}
+console.log("=========================================");
+
+if (exists) {
     app.use(express.static(frontendBuildPath));
     
     // Serve React SPA index.html for any non-API routes
@@ -47,9 +67,24 @@ if (fs.existsSync(frontendBuildPath)) {
         if (req.path.startsWith('/api')) {
             return next();
         }
-        res.sendFile(path.join(frontendBuildPath, 'index.html'));
+        res.sendFile(path.join(frontendBuildPath, 'index.html'), (err) => {
+            if (err) {
+                console.error("Error sending index.html:", err.message);
+                next(err);
+            }
+        });
     });
 }
+
+// Global unhandled error logging middleware
+app.use((err, req, res, next) => {
+    console.error("=== UNHANDLED ROUTE ERROR ===");
+    console.error("URL:", req.url);
+    console.error("Method:", req.method);
+    console.error(err.stack || err);
+    console.log("=============================");
+    res.status(500).json({ error: "Internal Server Error", details: err.message });
+});
 
 module.exports = app;
 
