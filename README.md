@@ -72,7 +72,7 @@ InterviewAI/
 
 ### 1. Clone & Navigate
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/careercraft-ai.git
+git clone https://github.com/amitroy1423/careercraft-ai.git
 cd careercraft-ai
 ```
 
@@ -83,11 +83,11 @@ cp .env.example Backend/.env
 ```
 Open `Backend/.env` and fill in your details:
 ```env
-PORT=5000
-MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/interview_ai
-JWT_SECRET=your_jwt_secret_key_here
-GOOGLE_GENAI_API_KEY=AIzaSy...your_gemini_api_key_here
-INTERVIEW_REPORT_URL=sumanta795/interviewprep-ai
+PORT=XXXX
+MONGO_URI=XXXXXXXXXXXX
+JWT_SECRET=XXXXXXXXXXXX
+GOOGLE_GENAI_API_KEY=XXXXXXXXXXXXX
+INTERVIEW_REPORT_URL=XXXXXXXXXXXX
 ```
 
 ### 3. Run One-Step Monorepo Installer
@@ -103,35 +103,3 @@ Run the development servers:
 
 ---
 
-## 🚀 Production Deployment on Render
-
-This repository is pre-configured to build, compile, and run out-of-the-box on Render's free tier as a single unified service.
-
-### Service Settings on Render
-1.  Create a **New Web Service** and connect your GitHub repository.
-2.  Set the following configuration variables:
-    *   **Root Directory**: *(leave blank)*
-    *   **Runtime**: `Node`
-    *   **Build Command**: `npm run build`
-    *   **Start Command**: `npm start`
-3.  Add the following **Environment Variables** in Render's Advanced settings:
-
-| Key | Value | Notes |
-| :--- | :--- | :--- |
-| `NODE_ENV` | `production` | Activates secure cross-origin HTTP cookies |
-| `MONGO_URI` | `mongodb+srv://...` | Your MongoDB Connection URI |
-| `JWT_SECRET` | `your_secret_string` | Secure string used for signing user sessions |
-| `GOOGLE_GENAI_API_KEY` | `AIzaSy...` | Your Google Gemini API Key |
-| `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD` | `false` | Commands Puppeteer to download Chromium on build |
-| `PUPPETEER_CACHE_DIR` | `/opt/render/project/src/.cache/puppeteer` | Prevents cache corruption on subsequent deploys |
-
-4.  Configure MongoDB Atlas Network Access: Add IP `0.0.0.0/0` (Allow access from anywhere) to allow Render's dynamic web instances to connect securely to your database.
-5.  Click **Create Web Service**! Your unified full-stack application will build, compile, and serve automatically.
-
----
-
-## 🛡️ License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-*Developed with ❤️ as a resume showcase application.*
