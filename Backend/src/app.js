@@ -19,7 +19,15 @@ app.use(cors({
     origin: function (origin, callback) {
         // allow requests with no origin (like mobile apps, curl, or same-origin)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+        
+        // Dynamically allow local development origins and any Render subdomain out-of-the-box
+        const isAllowed = allowedOrigins.indexOf(origin) !== -1 || 
+                          allowedOrigins.includes("*") ||
+                          origin.endsWith('.onrender.com') ||
+                          origin.includes('localhost') || 
+                          origin.includes('127.0.0.1');
+
+        if (isAllowed) {
             return callback(null, true);
         } else {
             return callback(new Error('Not allowed by CORS'));
