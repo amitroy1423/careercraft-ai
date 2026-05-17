@@ -16,14 +16,12 @@ export const useAuth = () => {
             const data = await login({ email, password })
             if (data && data.user) {
                 setUser(data.user)
-                return true
+                return { success: true }
             } else {
-                console.error("Login failed: No user data returned")
-                return false
+                return { success: false, message: "Login failed. Please try again." }
             }
         } catch (err) {
-            console.error("Login error:", err)
-            return false
+            return { success: false, message: err.message || "Invalid email or password." }
         } finally {
             setLoading(false)
         }
